@@ -4,11 +4,11 @@ import { Activity, UploadCloud, ScrollText, History, Settings, Database } from "
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
-  { path: "/", label: "Dashboard", icon: Activity },
-  { path: "/upload", label: "Excel Upload", icon: UploadCloud },
-  { path: "/logs", label: "Live Logs", icon: ScrollText },
-  { path: "/history", label: "Run History", icon: History },
-  { path: "/settings", label: "Bot Settings", icon: Settings },
+  { path: "/", label: "Boshqaruv paneli", icon: Activity },
+  { path: "/upload", label: "Excel yuklash", icon: UploadCloud },
+  { path: "/logs", label: "Jonli loglar", icon: ScrollText },
+  { path: "/history", label: "Tarix", icon: History },
+  { path: "/settings", label: "Sozlamalar", icon: Settings },
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {

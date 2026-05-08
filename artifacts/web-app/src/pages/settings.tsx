@@ -16,17 +16,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Save } from "lucide-react";
 
 const formSchema = z.object({
-  password: z.string().min(1, "Password is required"),
-  employeeSearch: z.string().min(1, "Employee search term is required"),
-  defaultHudud: z.string().min(1, "Hudud is required"),
-  defaultTuman: z.string().min(1, "Tuman is required"),
-  defaultMahalla: z.string().min(1, "Mahalla is required"),
-  defaultYonalish: z.string().min(1, "Yonalish is required"),
-  defaultOy: z.string().min(1, "Oy is required"),
-  defaultShartnomaUri: z.string().min(1, "Shartnoma Turi is required"),
-  defaultIshBoshlangan: z.string().min(1, "Ish boshlangan is required"),
-  defaultShartnamaSan: z.string().min(1, "Shartnama san is required"),
-  defaultBajarilgan: z.string().min(1, "Bajarilgan ish is required"),
+  password: z.string().min(1, "Parol majburiy"),
+  employeeSearch: z.string().min(1, "Xodim qidiruv so'zi majburiy"),
+  defaultHudud: z.string().min(1, "Hudud majburiy"),
+  defaultTuman: z.string().min(1, "Tuman majburiy"),
+  defaultMahalla: z.string().min(1, "Mahalla majburiy"),
+  defaultYonalish: z.string().min(1, "Yo'nalish majburiy"),
+  defaultOy: z.string().min(1, "Oy majburiy"),
+  defaultShartnomaUri: z.string().min(1, "Shartnoma turi majburiy"),
+  defaultIshBoshlangan: z.string().min(1, "Ish boshlangan sana majburiy"),
+  defaultShartnamaSan: z.string().min(1, "Shartnoma sanasi majburiy"),
+  defaultBajarilgan: z.string().min(1, "Bajarilgan ish majburiy"),
   headless: z.boolean(),
 });
 
@@ -63,21 +63,19 @@ export default function Settings() {
 
   useEffect(() => {
     if (settings) {
-      form.reset({
-        ...settings,
-      });
+      form.reset({ ...settings });
     }
   }, [settings, form]);
 
   const onSubmit = (data: FormValues) => {
     updateMutation.mutate({ data }, {
       onSuccess: () => {
-        toast({ title: "Settings saved successfully" });
+        toast({ title: "Sozlamalar saqlandi" });
       },
       onError: (err) => {
         toast({ 
-          title: "Failed to save settings", 
-          description: err.error || "Unknown error",
+          title: "Sozlamalarni saqlashda xato", 
+          description: err.error || "Noma'lum xato",
           variant: "destructive"
         });
       }
@@ -91,16 +89,16 @@ export default function Settings() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Bot Configuration</h2>
-        <p className="text-sm text-muted-foreground mt-1">Configure defaults and credentials for the automation scripts.</p>
+        <h2 className="text-2xl font-bold tracking-tight">Bot sozlamalari</h2>
+        <p className="text-sm text-muted-foreground mt-1">Avtomatlashtirish uchun standart qiymatlar va kirish ma'lumotlari.</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-lg">Core Settings</CardTitle>
-              <CardDescription>Authentication and execution behavior</CardDescription>
+              <CardTitle className="text-lg">Asosiy sozlamalar</CardTitle>
+              <CardDescription>Tizimga kirish va ishlash sozlamalari</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -109,9 +107,9 @@ export default function Settings() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mehnat.uz Password</FormLabel>
+                      <FormLabel>Mehnat.uz paroli</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="***" {...field} />
+                        <Input type="password" placeholder="***" {...field} data-testid="input-password" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -122,9 +120,9 @@ export default function Settings() {
                   name="employeeSearch"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Employee Search Keyword</FormLabel>
+                      <FormLabel>Xodim qidiruv kalit so'zi</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g. Oqil" {...field} />
+                        <Input placeholder="masalan: TEMURSULTON" {...field} data-testid="input-employee-search" />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -137,15 +135,16 @@ export default function Settings() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border border-border p-4 bg-secondary/20 mt-4">
                     <div className="space-y-0.5">
-                      <FormLabel className="text-base">Headless Mode</FormLabel>
+                      <FormLabel className="text-base">Fonsiz rejim (Headless)</FormLabel>
                       <FormDescription>
-                        Run browser in background without UI window (faster, recommended for production).
+                        Brauzer oynasisiz ishlasin — tezroq va serverlar uchun tavsiya etiladi.
                       </FormDescription>
                     </div>
                     <FormControl>
                       <Switch
                         checked={field.value}
                         onCheckedChange={field.onChange}
+                        data-testid="switch-headless"
                       />
                     </FormControl>
                   </FormItem>
@@ -156,8 +155,8 @@ export default function Settings() {
 
           <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-lg">Default Form Values</CardTitle>
-              <CardDescription>These values will be applied uniformly across all form entries.</CardDescription>
+              <CardTitle className="text-lg">Standart forma qiymatlari</CardTitle>
+              <CardDescription>Bu qiymatlar barcha forma yozuvlariga avtomatik qo'llaniladi.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
@@ -166,8 +165,8 @@ export default function Settings() {
                   name="defaultHudud"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Hudud (Region)</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormLabel>Hudud</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-hudud" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -177,8 +176,8 @@ export default function Settings() {
                   name="defaultTuman"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tuman (District)</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormLabel>Tuman</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-tuman" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -189,7 +188,7 @@ export default function Settings() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Mahalla</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormControl><Input {...field} data-testid="input-mahalla" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -199,8 +198,8 @@ export default function Settings() {
                   name="defaultYonalish"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Yo'nalish (Direction)</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormLabel>Yo'nalish</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-yonalish" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -210,8 +209,8 @@ export default function Settings() {
                   name="defaultOy"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Oy (Month)</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormLabel>Oy</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-oy" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -221,8 +220,8 @@ export default function Settings() {
                   name="defaultShartnomaUri"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Shartnoma Turi</FormLabel>
-                      <FormControl><Input {...field} /></FormControl>
+                      <FormLabel>Shartnoma turi</FormLabel>
+                      <FormControl><Input {...field} data-testid="input-shartnoma-turi" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -232,8 +231,8 @@ export default function Settings() {
                   name="defaultIshBoshlangan"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Ish Boshlangan Sana</FormLabel>
-                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                      <FormLabel>Ish boshlangan sana</FormLabel>
+                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} data-testid="input-ish-boshlangan" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -243,8 +242,8 @@ export default function Settings() {
                   name="defaultShartnamaSan"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Shartnoma Sanasi</FormLabel>
-                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} /></FormControl>
+                      <FormLabel>Shartnoma sanasi</FormLabel>
+                      <FormControl><Input placeholder="YYYY-MM-DD" {...field} data-testid="input-shartnoma-sana" /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -255,8 +254,8 @@ export default function Settings() {
                     name="defaultBajarilgan"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bajarilgan Ish (Completed Work Description)</FormLabel>
-                        <FormControl><Input {...field} /></FormControl>
+                        <FormLabel>Bajarilgan ish (xizmat) turi</FormLabel>
+                        <FormControl><Input {...field} data-testid="input-bajarilgan" /></FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -267,13 +266,13 @@ export default function Settings() {
           </Card>
 
           <div className="flex justify-end">
-            <Button type="submit" size="lg" disabled={updateMutation.isPending} className="w-full md:w-auto min-w-[200px]">
+            <Button type="submit" size="lg" disabled={updateMutation.isPending} className="w-full md:w-auto min-w-[200px]" data-testid="button-save-settings">
               {updateMutation.isPending ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : (
                 <Save className="w-4 h-4 mr-2" />
               )}
-              Save Configuration
+              Sozlamalarni saqlash
             </Button>
           </div>
         </form>

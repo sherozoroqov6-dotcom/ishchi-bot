@@ -27,8 +27,8 @@ export default function Upload() {
   const handleFile = (file: File) => {
     if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
       toast({
-        title: "Invalid file type",
-        description: "Please upload an Excel file (.xlsx, .xls)",
+        title: "Noto'g'ri fayl turi",
+        description: "Faqat Excel fayl (.xlsx, .xls) yuklanadi",
         variant: "destructive"
       });
       return;
@@ -39,13 +39,13 @@ export default function Upload() {
 
     uploadMutation.mutate({ data: { file } as any }, {
       onSuccess: () => {
-        toast({ title: "File uploaded successfully" });
+        toast({ title: "Fayl muvaffaqiyatli yuklandi" });
         queryClient.invalidateQueries({ queryKey: getGetExcelPreviewQueryKey() });
       },
       onError: (err) => {
         toast({ 
-          title: "Upload failed", 
-          description: err.error || "Unknown error occurred",
+          title: "Yuklashda xato", 
+          description: err.error || "Noma'lum xato yuz berdi",
           variant: "destructive"
         });
       }
@@ -71,8 +71,8 @@ export default function Upload() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 animate-in fade-in duration-500">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Excel Upload</h2>
-        <p className="text-sm text-muted-foreground mt-1">Upload the employment data file for automation processing.</p>
+        <h2 className="text-2xl font-bold tracking-tight">Excel fayl yuklash</h2>
+        <p className="text-sm text-muted-foreground mt-1">Ishchilar ma'lumotlari bilan Excel faylni yuklang.</p>
       </div>
 
       <Card className="bg-card border-border">
@@ -90,6 +90,7 @@ export default function Upload() {
               ref={fileInputRef} 
               className="hidden" 
               accept=".xlsx,.xls"
+              data-testid="input-excel-file"
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
                   handleFile(e.target.files[0]);
@@ -103,13 +104,14 @@ export default function Upload() {
                 <UploadCloud className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
-            <h3 className="text-lg font-medium mb-1">Drag & drop your Excel file here</h3>
-            <p className="text-sm text-muted-foreground mb-6">Or click below to browse your files. Supports .xlsx and .xls</p>
+            <h3 className="text-lg font-medium mb-1">Excel faylni shu yerga tashlang</h3>
+            <p className="text-sm text-muted-foreground mb-6">Yoki quyidagi tugmani bosib faylni tanlang. .xlsx va .xls qo'llab-quvvatlanadi</p>
             <Button 
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadMutation.isPending}
+              data-testid="button-select-file"
             >
-              Select File
+              Fayl tanlash
             </Button>
           </div>
         </CardContent>
@@ -120,10 +122,10 @@ export default function Upload() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <FileSpreadsheet className="w-5 h-5 mr-2 text-primary" />
-              Data Preview
+              Ma'lumotlar ko'rinishi
             </CardTitle>
             <CardDescription>
-              {previewData ? `${previewData.totalCount} rows detected in uploaded file.` : 'Loading preview...'}
+              {previewData ? `Yuklangan faylda ${previewData.totalCount} ta qator aniqlandi.` : 'Yuklanmoqda...'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -156,7 +158,7 @@ export default function Upload() {
               </div>
             ) : (
               <div className="text-center py-8 text-muted-foreground">
-                No preview data available.
+                Ko'rsatish uchun ma'lumot yo'q.
               </div>
             )}
           </CardContent>

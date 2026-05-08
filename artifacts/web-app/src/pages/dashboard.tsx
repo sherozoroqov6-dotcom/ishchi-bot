@@ -14,6 +14,14 @@ import { Play, Square, Activity, AlertCircle, CheckCircle2, Database } from "luc
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 
+const STATUS_LABELS: Record<string, string> = {
+  idle: "TAYYOR",
+  running: "ISHLAYAPTI",
+  stopping: "TO'XTATILMOQDA",
+  error: "XATO",
+  completed: "YAKUNLANDI",
+};
+
 export default function Dashboard() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -40,19 +48,19 @@ export default function Dashboard() {
   const handleStart = () => {
     if (!statusData?.hasExcelFile) {
       toast({
-        title: "No Data",
-        description: "Please upload an Excel file first.",
+        title: "Ma'lumot yo'q",
+        description: "Avval Excel fayl yuklang.",
         variant: "destructive"
       });
       return;
     }
     startBot.mutate(undefined, {
       onSuccess: () => {
-        toast({ title: "Bot started" });
+        toast({ title: "Bot ishga tushdi" });
         queryClient.invalidateQueries({ queryKey: getGetBotStatusQueryKey() });
       },
       onError: (err) => {
-        toast({ title: "Failed to start", description: err?.error || "Unknown error", variant: "destructive" });
+        toast({ title: "Botni ishga tushirib bo'lmadi", description: err?.error || "Noma'lum xato", variant: "destructive" });
       }
     });
   };
@@ -60,7 +68,7 @@ export default function Dashboard() {
   const handleStop = () => {
     stopBot.mutate(undefined, {
       onSuccess: () => {
-        toast({ title: "Stop signal sent" });
+        toast({ title: "To'xtatish signali yuborildi" });
         queryClient.invalidateQueries({ queryKey: getGetBotStatusQueryKey() });
       }
     });
@@ -70,12 +78,19 @@ export default function Dashboard() {
     ? ((statusData.processedRows + statusData.failedRows) / statusData.totalRows) * 100 
     : 0;
 
+  const LOG_LEVEL_LABELS: Record<string, string> = {
+    info: "AXBOROT",
+    warn: "OGOHLANTIRISH",
+    error: "XATO",
+    success: "MUVAFFAQ",
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-sm text-muted-foreground mt-1">Live bot status and operational control.</p>
+          <h2 className="text-2xl font-bold tracking-tight">Boshqaruv paneli</h2>
+          <p className="text-sm text-muted-foreground mt-1">Bot holati va boshqaruvi.</p>
         </div>
         <div className="flex items-center gap-3">
           <Button 
@@ -83,10 +98,11 @@ export default function Dashboard() {
             size="sm" 
             onClick={handleStart} 
             disabled={isRunning || startBot.isPending}
-            className="w-32 bg-primary text-primary-foreground hover:bg-primary/90"
+            className="w-36 bg-primary text-primary-foreground hover:bg-primary/90"
+            data-testid="button-start-bot"
           >
             <Play className="w-4 h-4 mr-2" />
-            Start Bot
+            Botni ishga tushir
           </Button>
           <Button 
             variant="destructive" 
@@ -94,9 +110,10 @@ export default function Dashboard() {
             onClick={handleStop} 
             disabled={!isRunning || stopBot.isPending}
             className="w-32"
+            data-testid="button-stop-bot"
           >
             <Square className="w-4 h-4 mr-2" />
-            Stop Bot
+            To'xtatish
           </Button>
         </div>
       </div>
@@ -104,16 +121,16 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Status</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Holat</CardTitle>
             <Activity className="w-4 h-4 text-primary" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold uppercase tracking-wider text-foreground">
-              {statusData?.status || 'UNKNOWN'}
+              {STATUS_LABELS[statusData?.status || ''] || statusData?.status || 'NOMA\'LUM'}
             </div>
             {statusData?.startedAt && (
               <p className="text-xs text-muted-foreground mt-1">
-                Started: {new Date(statusData.startedAt).toLocaleTimeString()}
+                Boshlangan: {new Date(statusData.startedAt).toLocaleTimeString('uz-UZ')}
               </p>
             )}
           </CardContent>
@@ -121,45 +138,45 @@ export default function Dashboard() {
 
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Processed</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Muvaffaqiyatli</CardTitle>
             <CheckCircle2 className="w-4 h-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{statusData?.processedRows || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">Rows successfully completed</p>
+            <p className="text-xs text-muted-foreground mt-1">Saqlangan qatorlar soni</p>
           </CardContent>
         </Card>
 
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Failed</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Xatolik</CardTitle>
             <AlertCircle className="w-4 h-4 text-destructive" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">{statusData?.failedRows || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">Rows with errors</p>
+            <p className="text-xs text-muted-foreground mt-1">Xato bilan o'tgan qatorlar</p>
           </CardContent>
         </Card>
 
         <Card className="bg-card border-border">
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Rows</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Jami qatorlar</CardTitle>
             <Database className="w-4 h-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{statusData?.totalRows || 0}</div>
-            <p className="text-xs text-muted-foreground mt-1">In current Excel file</p>
+            <p className="text-xs text-muted-foreground mt-1">Excel fayldagi jami qator</p>
           </CardContent>
         </Card>
       </div>
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Job Progress</CardTitle>
+          <CardTitle className="text-sm font-medium">Bajarilish jarayoni</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between text-sm mb-2">
-            <span className="text-muted-foreground">Completion</span>
+            <span className="text-muted-foreground">Bajarildi</span>
             <span className="font-mono font-medium">{progressValue.toFixed(1)}%</span>
           </div>
           <Progress value={progressValue} className="h-2" />
@@ -168,12 +185,12 @@ export default function Dashboard() {
 
       <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="text-sm font-medium">Recent Logs</CardTitle>
+          <CardTitle className="text-sm font-medium">So'nggi loglar</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="bg-black/50 rounded-md p-4 font-mono text-xs overflow-y-auto max-h-64 border border-border space-y-1.5">
             {!logsData?.length && (
-              <div className="text-muted-foreground text-center py-4">No recent logs</div>
+              <div className="text-muted-foreground text-center py-4">Loglar yo'q</div>
             )}
             {logsData?.map((log) => {
               let color = 'text-muted-foreground';
@@ -185,14 +202,14 @@ export default function Dashboard() {
               return (
                 <div key={log.id} className="flex gap-3 items-start">
                   <span className="text-muted-foreground opacity-50 shrink-0">
-                    {new Date(log.timestamp).toLocaleTimeString()}
+                    {new Date(log.timestamp).toLocaleTimeString('uz-UZ')}
                   </span>
-                  <span className={`shrink-0 uppercase w-12 font-bold ${color}`}>
-                    {log.level}
+                  <span className={`shrink-0 uppercase w-16 font-bold text-[10px] ${color}`}>
+                    {LOG_LEVEL_LABELS[log.level] || log.level}
                   </span>
                   {log.rowNumber && (
                     <span className="shrink-0 bg-primary/20 text-primary px-1 rounded text-[10px]">
-                      R{log.rowNumber}
+                      Q{log.rowNumber}
                     </span>
                   )}
                   <span className="text-foreground break-all">{log.message}</span>
