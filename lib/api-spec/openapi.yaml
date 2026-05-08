@@ -3,20 +3,23 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Mehnat.uz Bot API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: bot
+    description: Bot control operations
+  - name: settings
+    description: Bot settings
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +27,163 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /bot/upload:
+    post:
+      operationId: uploadExcel
+      tags: [bot]
+      summary: Upload Excel file with employee data
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+              required:
+                - file
+      responses:
+        "200":
+          description: File uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadResult"
+        "400":
+          description: Invalid file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bot/start:
+    post:
+      operationId: startBot
+      tags: [bot]
+      summary: Start the bot
+      responses:
+        "200":
+          description: Bot started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotRun"
+        "400":
+          description: Bot already running or no Excel file
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bot/stop:
+    post:
+      operationId: stopBot
+      tags: [bot]
+      summary: Stop the running bot
+      responses:
+        "200":
+          description: Bot stopped
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /bot/status:
+    get:
+      operationId: getBotStatus
+      tags: [bot]
+      summary: Get current bot status and progress
+      responses:
+        "200":
+          description: Bot status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotStatus"
+
+  /bot/logs:
+    get:
+      operationId: getBotLogs
+      tags: [bot]
+      summary: Get recent bot logs
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 100
+          required: false
+      responses:
+        "200":
+          description: Log entries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/LogEntry"
+
+  /bot/history:
+    get:
+      operationId: getBotHistory
+      tags: [bot]
+      summary: Get bot run history
+      responses:
+        "200":
+          description: List of past runs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BotRun"
+
+  /bot/preview:
+    get:
+      operationId: getExcelPreview
+      tags: [bot]
+      summary: Preview uploaded Excel data rows
+      responses:
+        "200":
+          description: Excel data rows preview
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExcelPreview"
+
+  /settings:
+    get:
+      operationId: getSettings
+      tags: [settings]
+      summary: Get bot settings
+      responses:
+        "200":
+          description: Current settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSettings"
+    put:
+      operationId: updateSettings
+      tags: [settings]
+      summary: Update bot settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BotSettings"
+      responses:
+        "200":
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BotSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +194,170 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    UploadResult:
+      type: object
+      properties:
+        filename:
+          type: string
+        rowCount:
+          type: integer
+        message:
+          type: string
+      required:
+        - filename
+        - rowCount
+        - message
+
+    BotStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [idle, running, stopping, error, completed]
+        currentRunId:
+          type: string
+          nullable: true
+        totalRows:
+          type: integer
+        processedRows:
+          type: integer
+        failedRows:
+          type: integer
+        startedAt:
+          type: string
+          nullable: true
+        hasExcelFile:
+          type: boolean
+      required:
+        - status
+        - currentRunId
+        - totalRows
+        - processedRows
+        - failedRows
+        - startedAt
+        - hasExcelFile
+
+    BotRun:
+      type: object
+      properties:
+        id:
+          type: string
+        status:
+          type: string
+          enum: [running, completed, stopped, error]
+        startedAt:
+          type: string
+        completedAt:
+          type: string
+          nullable: true
+        totalRows:
+          type: integer
+        processedRows:
+          type: integer
+        failedRows:
+          type: integer
+      required:
+        - id
+        - status
+        - startedAt
+        - completedAt
+        - totalRows
+        - processedRows
+        - failedRows
+
+    LogEntry:
+      type: object
+      properties:
+        id:
+          type: string
+        timestamp:
+          type: string
+        level:
+          type: string
+          enum: [info, warn, error, success]
+        message:
+          type: string
+        rowNumber:
+          type: integer
+          nullable: true
+      required:
+        - id
+        - timestamp
+        - level
+        - message
+        - rowNumber
+
+    ExcelPreview:
+      type: object
+      properties:
+        headers:
+          type: array
+          items:
+            type: string
+        rows:
+          type: array
+          items:
+            type: object
+        totalCount:
+          type: integer
+      required:
+        - headers
+        - rows
+        - totalCount
+
+    BotSettings:
+      type: object
+      properties:
+        password:
+          type: string
+        employeeSearch:
+          type: string
+        defaultHudud:
+          type: string
+        defaultTuman:
+          type: string
+        defaultMahalla:
+          type: string
+        defaultYonalish:
+          type: string
+        defaultOy:
+          type: string
+        defaultShartnomaUri:
+          type: string
+        defaultIshBoshlangan:
+          type: string
+        defaultShartnamaSan:
+          type: string
+        defaultBajarilgan:
+          type: string
+        headless:
+          type: boolean
+      required:
+        - password
+        - employeeSearch
+        - defaultHudud
+        - defaultTuman
+        - defaultMahalla
+        - defaultYonalish
+        - defaultOy
+        - defaultShartnomaUri
+        - defaultIshBoshlangan
+        - defaultShartnamaSan
+        - defaultBajarilgan
+        - headless
