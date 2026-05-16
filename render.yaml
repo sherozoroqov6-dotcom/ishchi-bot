@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: ishchi-bot
+    runtime: node
+    plan: free
+    buildCommand: echo "Using pre-built dist"
+    startCommand: node artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
